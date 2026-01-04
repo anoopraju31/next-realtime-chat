@@ -7,6 +7,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { client } from '@/lib/client';
 import { useUsername } from '@/hooks/useUsername';
 import { format } from 'date-fns';
+import { useRealtime } from '@/lib/realtimeClient';
 
 type CopyStatus = 'COPY' | 'COPIED';
 
@@ -26,11 +27,19 @@ const RoomPage: FC = () => {
   const roomId = params.roomId as string;
   const { username } = useUsername();
 
-  const { data: messages } = useQuery({
+  const { data: messages, refetch: refetchMessages } = useQuery({
     queryKey: ['messages', roomId],
     queryFn: async () => {
       const res = await client.message.get({ query: { roomId } });
       return res.data;
+    },
+  });
+
+  const {} = useRealtime({
+    channels: [roomId],
+    events: ['chat.destroy', 'chat.message'],
+    onData: ({ event }) => {
+      if (event === 'chat.message') refetchMessages();
     },
   });
 
