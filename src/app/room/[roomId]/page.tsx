@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type FC } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 import { useParams } from 'next/navigation';
 import { MdDelete } from 'react-icons/md';
 
@@ -16,6 +16,8 @@ const formatTimeRemaining = (timeRemaining: number) => {
 const RoomPage: FC = () => {
   const [copyStatus, setCopyStatus] = useState<CopyStatus>('COPY');
   const [timeRemaining, setTimeRemaining] = useState<number | null>(121);
+  const [input, setInput] = useState<string>('');
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const params = useParams();
   const roomId = params.roomId;
 
@@ -77,7 +79,18 @@ const RoomPage: FC = () => {
           <div className="group relative flex-1">
             <span className="absolute top-1/2 left-4 -translate-y-1/2 animate-pulse text-green-500"> {'>'} </span>
             <input
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && input.trim()) {
+                  // todo: SEND MESSAGE
+
+                  inputRef.current?.focus();
+                }
+              }}
               type="text"
+              placeholder="Type Message..."
               autoFocus
               className="w-full border border-zinc-800 bg-black py-3 pr-4 pl-8 text-sm text-zinc-100 transition-colors duration-300 focus:border-zinc-700 focus:outline-none"
             />
