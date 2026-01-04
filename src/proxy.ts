@@ -11,7 +11,7 @@ type RoomMetaData = {
 
 export const proxy = async (req: NextRequest) => {
   //? OVERVIEW: CHECK IF USER IS ALLOWED TO JOIN ROOM
-  //!IF ALLOWED: LET THEM PASS
+  //! IF ALLOWED: LET THEM PASS
   //! IF NOT ALLOWED:  SEND THEM BACK TO LOBBY
 
   const pathname = req.nextUrl.pathname;
