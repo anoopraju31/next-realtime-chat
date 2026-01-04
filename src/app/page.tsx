@@ -8,7 +8,7 @@ import { useUsername } from '@/hooks/useUsername';
 import { client } from '@/lib/client';
 
 const HomePage: FC = () => {
-  const username = useUsername();
+  const { username } = useUsername();
   const router = useRouter();
 
   const { mutate: createRoom } = useMutation({
