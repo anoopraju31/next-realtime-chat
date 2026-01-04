@@ -5,3 +5,10 @@ export const getBaseUrl = () => {
 };
 
 export const BASE_URL = getBaseUrl();
+
+export const checkIsSecured = () => {
+  const environment = process.env.NEXT_PUBLIC_ENVIRONMENT;
+  if (!environment) throw new Error('NEXT_PUBLIC_ENVIRONMENT is not set');
+
+  return environment === 'PRODUCTION';
+};
