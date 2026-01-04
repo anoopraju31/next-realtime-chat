@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, type FC } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { MdDelete } from 'react-icons/md';
@@ -27,6 +27,7 @@ const RoomPage: FC = () => {
   const params = useParams();
   const roomId = params.roomId as string;
   const { username } = useUsername();
+  const router = useRouter();
 
   const { data: messages, refetch: refetchMessages } = useQuery({
     queryKey: ['messages', roomId],
@@ -41,6 +42,7 @@ const RoomPage: FC = () => {
     events: ['chat.destroy', 'chat.message'],
     onData: ({ event }) => {
       if (event === 'chat.message') refetchMessages();
+      if (event === 'chat.destroy') router.push(`/?destroyed=true`);
     },
   });
 
