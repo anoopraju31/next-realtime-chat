@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState, type FC } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { nanoid } from 'nanoid';
+import { useMutation } from '@tanstack/react-query';
 
 import { client } from '@/lib/client';
 
@@ -16,6 +17,7 @@ const generateUsername = () => {
 
 const HomePage: FC = () => {
   const [username, setUsername] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
     const main = () => {
@@ -39,7 +41,9 @@ const HomePage: FC = () => {
     mutationFn: async () => {
       const res = await client.room.create.post();
 
-      return await res.data;
+      if (res.status === 200) {
+        router.push(`/room/${res.data?.roomId}`);
+      }
     },
   });
 
