@@ -1,14 +1,14 @@
 'use client';
 
-import { useRef, useState, type FC } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { MdDelete } from 'react-icons/md';
 
 import { useUsername } from '@/hooks/useUsername';
-import { client } from '@/lib/client';
 import { useRealtime } from '@/lib/realtimeClient';
+import { client } from '@/lib/client';
 
 type CopyStatus = 'COPY' | 'COPIED';
 
@@ -21,13 +21,14 @@ const formatTimeRemaining = (timeRemaining: number) => {
 
 const RoomPage: FC = () => {
   const [copyStatus, setCopyStatus] = useState<CopyStatus>('COPY');
-  const [timeRemaining, setTimeRemaining] = useState<number | null>(121);
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [text, setText] = useState<string>('');
   const inputRef = useRef<HTMLInputElement | null>(null);
   const params = useParams();
-  const roomId = params.roomId as string;
   const { username } = useUsername();
   const router = useRouter();
+
+  const roomId = params.roomId as string;
 
   const { data: messages, refetch: refetchMessages } = useQuery({
     queryKey: ['messages', roomId],
@@ -36,6 +37,38 @@ const RoomPage: FC = () => {
       return res.data;
     },
   });
+
+  const { data: ttlData } = useQuery({
+    queryKey: ['ttl', roomId],
+    queryFn: async () => {
+      const ttl = await client.room.ttl.get({ query: { roomId } });
+      return ttl.data;
+    },
+  });
+
+  //   Time Remaining
+  useEffect(() => {
+    if (ttlData === undefined || ttlData === null) return;
+
+    setTimeRemaining(ttlData.ttl);
+  }, [ttlData]);
+
+  //   Timer
+  useEffect(() => {
+    if (timeRemaining === null) return;
+
+    const interval = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev === null || prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timeRemaining]);
 
   const {} = useRealtime({
     channels: [roomId],
