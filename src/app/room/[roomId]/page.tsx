@@ -1,8 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState, type FC } from 'react';
+import { useRef, useState, type FC } from 'react';
 import { useParams } from 'next/navigation';
 import { MdDelete } from 'react-icons/md';
+import { useMutation } from '@tanstack/react-query';
+import { client } from '@/lib/client';
+import { useUsername } from '@/hooks/useUsername';
 
 type CopyStatus = 'COPY' | 'COPIED';
 
@@ -16,12 +19,11 @@ const formatTimeRemaining = (timeRemaining: number) => {
 const RoomPage: FC = () => {
   const [copyStatus, setCopyStatus] = useState<CopyStatus>('COPY');
   const [timeRemaining, setTimeRemaining] = useState<number | null>(121);
-  const [input, setInput] = useState<string>('');
+  const [text, setText] = useState<string>('');
   const inputRef = useRef<HTMLInputElement | null>(null);
   const params = useParams();
-  const roomId = params.roomId;
-
-  useEffect(() => {}, []);
+  const roomId = params.roomId as string;
+  const { username } = useUsername();
 
   const handleCopyLink = () => {
     const url = window.location.href;
@@ -31,6 +33,14 @@ const RoomPage: FC = () => {
 
     setTimeout(() => setCopyStatus('COPY'), 2000);
   };
+
+  const { mutate: sendMessage, isPending } = useMutation({
+    mutationFn: async ({ text }: { text: string }) => {
+      await client.message.post({ sender: username, text }, { query: { roomId } });
+
+      setText('');
+    },
+  });
 
   const copyButtonText = copyStatus === 'COPY' ? 'Copy' : 'Copied';
 
@@ -80,12 +90,11 @@ const RoomPage: FC = () => {
             <span className="absolute top-1/2 left-4 -translate-y-1/2 animate-pulse text-green-500"> {'>'} </span>
             <input
               ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && input.trim()) {
-                  // todo: SEND MESSAGE
-
+                if (e.key === 'Enter' && text.trim()) {
+                  sendMessage({ text });
                   inputRef.current?.focus();
                 }
               }}
@@ -96,7 +105,14 @@ const RoomPage: FC = () => {
             />
           </div>
 
-          <button className="cursor-pointer bg-zinc-800 px-6 text-sm font-bold text-zinc-400 transition-all hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-50">
+          <button
+            onClick={() => {
+              sendMessage({ text });
+              inputRef.current?.focus();
+            }}
+            disabled={!text.trim() || isPending}
+            className="cursor-pointer bg-zinc-800 px-6 text-sm font-bold text-zinc-400 transition-all hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+          >
             {' '}
             SEND{' '}
           </button>
