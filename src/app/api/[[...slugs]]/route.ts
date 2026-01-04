@@ -1,6 +1,8 @@
-import { redis } from '@/lib/redis';
 import { Elysia } from 'elysia';
 import { nanoid } from 'nanoid';
+
+import { redis } from '@/lib/redis';
+import { authMiddleware } from './auth';
 
 const ROOM_TTL_SECONDS = 60 * 10;
 
@@ -19,7 +21,13 @@ const rooms = new Elysia({
   return { roomId };
 });
 
-const app = new Elysia({ prefix: '/api' }).use(rooms);
+const messages = new Elysia({
+  prefix: '/message',
+})
+  .use(authMiddleware)
+  .post('/', async ({ auth }) => {});
+
+const app = new Elysia({ prefix: '/api' }).use(rooms).use(messages);
 
 export const GET = app.fetch;
 export const POST = app.fetch;
