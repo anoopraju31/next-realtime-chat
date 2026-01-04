@@ -79,6 +79,13 @@ const RoomPage: FC = () => {
     },
   });
 
+  const { mutate: destroyRoom } = useMutation({
+    mutationFn: async () => {
+      await client.room.delete(null, { query: { roomId } });
+      router.push(`/?destroyed=true`);
+    },
+  });
+
   const handleCopyLink = () => {
     const url = window.location.href;
 
@@ -130,7 +137,10 @@ const RoomPage: FC = () => {
           </div>
         </div>
 
-        <button className="group flex items-center gap-2 rounded bg-zinc-800 px-3 py-1.5 text-xs font-bold text-zinc-400 transition-all hover:bg-red-600 hover:text-white disabled:opacity-50">
+        <button
+          onClick={() => destroyRoom()}
+          className="group flex items-center gap-2 rounded bg-zinc-800 px-3 py-1.5 text-xs font-bold text-zinc-400 transition-all hover:bg-red-600 hover:text-white disabled:opacity-50"
+        >
           <MdDelete className="group-hover:animate-pulse" />
           DESTROY NOW
         </button>
