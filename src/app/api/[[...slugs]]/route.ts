@@ -27,11 +27,12 @@ const messages = new Elysia({
   prefix: '/message',
 })
   .use(authMiddleware)
+  // Send Message
   .post(
     '/',
     async ({ auth, body }) => {
       const { sender, text } = body;
-      const { roomId, token, connected } = auth;
+      const { roomId, token } = auth;
 
       const roomExists = await redis.exists(`meta:${roomId}`);
 
@@ -65,6 +66,24 @@ const messages = new Elysia({
         sender: z.string().max(100),
         text: z.string().max(1000),
       }),
+      query: z.object({
+        roomId: z.string(),
+      }),
+    },
+  )
+  // Get Messages
+  .get(
+    '/',
+    async ({ auth }) => {
+      const messages = redis.lrange<Message>(`messages:${auth.roomId}`, 0, -1);
+      return {
+        messages: (await messages).map((message) => ({
+          ...message,
+          token: message.token === auth.token ? auth.token : undefined,
+        })),
+      };
+    },
+    {
       query: z.object({
         roomId: z.string(),
       }),

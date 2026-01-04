@@ -3,9 +3,10 @@
 import { useRef, useState, type FC } from 'react';
 import { useParams } from 'next/navigation';
 import { MdDelete } from 'react-icons/md';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { client } from '@/lib/client';
 import { useUsername } from '@/hooks/useUsername';
+import { format } from 'date-fns';
 
 type CopyStatus = 'COPY' | 'COPIED';
 
@@ -24,6 +25,14 @@ const RoomPage: FC = () => {
   const params = useParams();
   const roomId = params.roomId as string;
   const { username } = useUsername();
+
+  const { data: messages } = useQuery({
+    queryKey: ['messages', roomId],
+    queryFn: async () => {
+      const res = await client.message.get({ query: { roomId } });
+      return res.data;
+    },
+  });
 
   const handleCopyLink = () => {
     const url = window.location.href;
@@ -82,7 +91,31 @@ const RoomPage: FC = () => {
         </button>
       </header>
 
-      <div className="scrollbar-thin flex-1 space-y-4 overflow-y-auto p-4"></div>
+      <div className="scrollbar-thin flex-1 space-y-4 overflow-y-auto p-4">
+        {messages?.messages.length === 0 && (
+          <div className="flex h-full items-center justify-center">
+            <p className="font-mono text-sm text-zinc-600"> No Messages Yet,start conversation </p>
+          </div>
+        )}
+
+        {messages?.messages.map((message) => (
+          <div key={message.id} className="flex flex-col items-start">
+            <div className="group max-w-[80%]">
+              <div className="mb-1 flex items-baseline gap-3">
+                <span
+                  className={`text-xs font-bold ${message.sender === username ? 'text-green-500' : 'text-blue-500'}`}
+                >
+                  {message.sender === username ? 'You' : message.sender}
+                </span>
+
+                <span className="text-[10px] text-zinc-600">{format(message.timestamp, 'HH:MM')}</span>
+              </div>
+
+              <p className="text-sm leading-relaxed break-all text-zinc-300"> {message.text} </p>
+            </div>
+          </div>
+        ))}
+      </div>
 
       <div className="border-t border-zinc-800 bg-zinc-900/30 p-4">
         <div className="flex gap-4">
