@@ -1,6 +1,6 @@
 'use client';
 
-import { type FC } from 'react';
+import { Suspense, type FC } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 
@@ -8,6 +8,14 @@ import { useUsername } from '@/hooks/useUsername';
 import { client } from '@/lib/client';
 
 const HomePage: FC = () => {
+  return (
+    <Suspense>
+      <Lobby />
+    </Suspense>
+  );
+};
+
+const Lobby: FC = () => {
   const { username } = useUsername();
   const searchParams = useSearchParams();
   const router = useRouter();
