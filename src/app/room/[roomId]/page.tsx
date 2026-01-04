@@ -2,11 +2,12 @@
 
 import { useRef, useState, type FC } from 'react';
 import { useParams } from 'next/navigation';
-import { MdDelete } from 'react-icons/md';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { client } from '@/lib/client';
-import { useUsername } from '@/hooks/useUsername';
 import { format } from 'date-fns';
+import { MdDelete } from 'react-icons/md';
+
+import { useUsername } from '@/hooks/useUsername';
+import { client } from '@/lib/client';
 import { useRealtime } from '@/lib/realtimeClient';
 
 type CopyStatus = 'COPY' | 'COPIED';
