@@ -1,5 +1,4 @@
 # ⏳ Next Realtime Chat
-
 **Next Realtime Chat** is a privacy-focused, real-time chat application built for fleeting conversations. Users can create secure rooms to chat with another person for exactly **10 minutes**. Once the timer expires, the room is automatically dismantled, and all conversation data is permanently purged from the database.
 
 ---
